@@ -10,16 +10,11 @@ namespace DijkstraAlgorithm
     {
         static void Main(string[] args)
         {
-            int N = 3;
-            int M = 5;
+            Graph graph = new Graph(1, 1, 2, 2, Surface.Plane);
 
-            double dx = 1;
-            double dy = 1;
+            graph.
 
-
-            Graph graph = new Graph(dx, dy, N, M, Surface.Plane);
-
-            Console.ReadLine();
+            Console.ReadLine();            
         }
     }
 }
