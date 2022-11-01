@@ -76,9 +76,9 @@ namespace DijkstraAlgorithm
             (double, double) x1y1 = GetRealXY(v1);
             (double, double) x2y2 = GetRealXY(v2);
 
-            double xDiff = x1y1.Item1 = x2y2.Item1;
-            double yDiff = x1y1.Item2 = x2y2.Item2;
-            double zDiff = v1.Height = v2.Height;
+            double xDiff = x1y1.Item1 - x2y2.Item1;
+            double yDiff = x1y1.Item2 - x2y2.Item2;
+            double zDiff = v1.Height - v2.Height;
 
             double sumOfSquares = Math.Pow(xDiff, 2.0) + Math.Pow(yDiff, 2.0) + Math.Pow(zDiff, 2.0);
 
