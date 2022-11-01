@@ -109,17 +109,20 @@ namespace DijkstraAlgorithm
             }
 
             return labels;
-        }
+        }    
 
-        /// <summary>
-        /// Возвращает вершину графа по ее координатам
-        /// </summary>
-        /// <param name="point2D">координаты (i, j) вершины графа</param>
-        /// <returns></returns>
-        private Vertex GetVertexByCoordinate(Point2D point2D)
-        {
-            return Vertices[point2D.i, point2D.j];
-        }
+        private Vertex GetTopVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j + 1];
+        private Vertex GetRightVertex(Vertex v) => Vertices[v.Coordinate.i + 1, v.Coordinate.j];
+        private Vertex GetBottomVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j - 1];
+        private Vertex GetLeftVertex(Vertex v) => Vertices[v.Coordinate.i - 1, v.Coordinate.j];
+        private Vertex GetTopRightVertex(Vertex v) => Vertices[v.Coordinate.i + 1, v.Coordinate.j + 1];
+        private Vertex GetBottomRightVertex(Vertex v) => Vertices[v.Coordinate.i + 1, v.Coordinate.j - 1];
+        private Vertex GetBottomLeftVertex(Vertex v) => Vertices[v.Coordinate.i - 1, v.Coordinate.j - 1];
+        private Vertex GetTopLeftVertex(Vertex v) => Vertices[v.Coordinate.i - 1, v.Coordinate.j + 1];
+
+        private bool IsTopRightVertex(Vertex v1) => v1.Coordinate.i == N - 1 && v1.Coordinate.j == M - 1;
+        private bool IsBottomRightVertex(Vertex v1) => v1.Coordinate.i == N - 1 && v1.Coordinate.j == M - 1;
+
 
         /// <summary>
         /// Возвращает все смежные вершины к рассматриваемой вершине
