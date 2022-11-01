@@ -25,7 +25,7 @@ namespace DijkstraAlgorithm
         public Func<double, double, double> SurfaceFunc { get; set; }
 
         /// <summary>
-        /// Возвращает координаты вершины с учетом координаты узла и шага регулярной сетки
+        /// Возвращает (физические) координаты вершины с учетом координаты узла и шага регулярной сетки
         /// </summary>
         /// <param name="vertex"></param>
         /// <returns></returns>
@@ -88,14 +88,83 @@ namespace DijkstraAlgorithm
         /// <summary>
         /// Возвращает наикратчайший путь между двумя заданными вершинами графа
         /// </summary>
-        /// <param name="point1"></param>
-        /// <param name="point2"></param>
+        /// <param name="v1">Вершина из которой необходимо найти наикратчайший путь</param>
+        /// <param name="v2">Вершина до которой необходимо найти наикратчайший путь</param>
         /// <returns></returns>
         public List<Label> FindShortestPath(Vertex v1, Vertex v2)
         {
+            // Вершине из которой будем искать путь присваиваем нулевую метку
+            Label zeroLabel = new Label(v1.Coordinate, 0.0);
+            v1.Labels.Clear();
+            v1.Labels.Add(zeroLabel);
+
             List<Label> labels = new List<Label>();
 
+            Vertex currentVertex = v1;
+
+            while (!AllVerticesAreVisited())
+            {
+                // Находим смежные вершины к текущей (рассматриваемой) вершине
+                List<Vertex> vertices = GetAllAdjacentVertices(currentVertex);
+            }
+
             return labels;
+        }
+
+        /// <summary>
+        /// Возвращает вершину графа по ее координатам
+        /// </summary>
+        /// <param name="point2D">координаты (i, j) вершины графа</param>
+        /// <returns></returns>
+        private Vertex GetVertexByCoordinate(Point2D point2D)
+        {
+            return Vertices[point2D.i, point2D.j];
+        }
+
+        /// <summary>
+        /// Возвращает все смежные вершины к рассматриваемой вершине
+        /// </summary>
+        /// <param name="vertex">рассматриваемая вершина</param>
+        /// <returns></returns>
+        private List<Vertex> GetAllAdjacentVertices(Vertex vertex)
+        {
+            List<Vertex> adjacentVertices = new List<Vertex>();
+
+            // Рассматриваем угловые вершины
+            if (vertex.HasCoordinates(0, 0))
+                return new List<Vertex> { Vertices[0, 1], Vertices[1, 1], Vertices[1, 0] };
+
+            if (vertex.HasCoordinates(N - 1, 0))
+                return new List<Vertex> { Vertices[N - 2, 0], Vertices[N - 1, 1], Vertices[N - 2, 1] };
+
+            if (vertex.HasCoordinates(0, M - 1))
+                return new List<Vertex> { Vertices[0, M - 2], Vertices[1, M - 1], Vertices[1, M - 2] };
+
+            if (vertex.HasCoordinates(N - 1, M - 1))
+                return new List<Vertex> { Vertices[N - 2, M - 1], Vertices[N - 1, M - 2], Vertices[N - 2, M - 2] };
+
+            // Рассматриваем боковые вершины
+
+
+
+            return adjacentVertices;
+        }
+
+        /// <summary>
+        /// Возвращает true, если все вершины графа посещены, иначе false
+        /// </summary>
+        /// <returns></returns>
+        private bool AllVerticesAreVisited()
+        {
+            if (this.Vertices == null)
+                return true;
+
+            for (int j = 0; j < M; j++)
+                for (int i = 0; i < N; i++)
+                    if (!Vertices[i, j].IsVisited)
+                        return false;
+
+            return true;
         }
 
         public Graph(double dx, double dy, int N, int M, Func<double, double, double> SurfaceFunc)
@@ -117,6 +186,5 @@ namespace DijkstraAlgorithm
                     Vertices[i, j] = new Vertex(i, j, height, labels);
                 }
         }
-
     }
 }

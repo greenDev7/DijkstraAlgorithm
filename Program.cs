@@ -12,7 +12,7 @@ namespace DijkstraAlgorithm
         {
             Graph graph = new Graph(1, 1, 2, 2, Surface.Plane);
 
-            graph.
+            
 
             Console.ReadLine();            
         }
