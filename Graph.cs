@@ -125,6 +125,11 @@ namespace DijkstraAlgorithm
         private bool IsBottomLeftVertex(Vertex v1) => v1.Coordinate.i == 0 && v1.Coordinate.j == 0;
         private bool IsTopLeftVertex(Vertex v1) => v1.Coordinate.i == 0 && v1.Coordinate.j == M - 1;
 
+        private bool IsVertexOnTheTopSide(Vertex v1) => v1.Coordinate.j == M - 1;
+        private bool IsVertexOnTheRightSide(Vertex v1) => v1.Coordinate.i == N - 1;
+        private bool IsVertexOnTheBottomSide(Vertex v1) => v1.Coordinate.j == 0;
+        private bool IsVertexOnTheLeftSide(Vertex v1) => v1.Coordinate.i == 0;
+
 
         /// <summary>
         /// Возвращает все смежные вершины к рассматриваемой вершине
