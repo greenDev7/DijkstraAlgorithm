@@ -109,8 +109,9 @@ namespace DijkstraAlgorithm
             }
 
             return labels;
-        }    
+        }
 
+        #region Методы для поиска соседней вершины в зависимости от направления
         private Vertex GetTopVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j + 1];
         private Vertex GetRightVertex(Vertex v) => Vertices[v.Coordinate.i + 1, v.Coordinate.j];
         private Vertex GetBottomVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j - 1];
@@ -119,7 +120,9 @@ namespace DijkstraAlgorithm
         private Vertex GetBottomRightVertex(Vertex v) => Vertices[v.Coordinate.i + 1, v.Coordinate.j - 1];
         private Vertex GetBottomLeftVertex(Vertex v) => Vertices[v.Coordinate.i - 1, v.Coordinate.j - 1];
         private Vertex GetTopLeftVertex(Vertex v) => Vertices[v.Coordinate.i - 1, v.Coordinate.j + 1];
+        #endregion
 
+        #region Методы для определения принадлежности вершины той или иной стороне/углу сетки
         private bool IsTopRightVertex(Vertex v1) => v1.Coordinate.i == N - 1 && v1.Coordinate.j == M - 1;
         private bool IsBottomRightVertex(Vertex v1) => v1.Coordinate.i == N - 1 && v1.Coordinate.j == 0;
         private bool IsBottomLeftVertex(Vertex v1) => v1.Coordinate.i == 0 && v1.Coordinate.j == 0;
@@ -129,7 +132,7 @@ namespace DijkstraAlgorithm
         private bool IsVertexOnTheRightSide(Vertex v1) => v1.Coordinate.i == N - 1;
         private bool IsVertexOnTheBottomSide(Vertex v1) => v1.Coordinate.j == 0;
         private bool IsVertexOnTheLeftSide(Vertex v1) => v1.Coordinate.i == 0;
-
+        #endregion
 
         /// <summary>
         /// Возвращает все смежные вершины к рассматриваемой вершине
@@ -138,26 +141,100 @@ namespace DijkstraAlgorithm
         /// <returns></returns>
         private List<Vertex> GetAllAdjacentVertices(Vertex vertex)
         {
-            List<Vertex> adjacentVertices = new List<Vertex>();
 
-            // Рассматриваем угловые вершины
-            if (vertex.HasCoordinates(0, 0))
-                return new List<Vertex> { Vertices[0, 1], Vertices[1, 1], Vertices[1, 0] };
+            #region Рассматриваем угловые вершины
 
-            if (vertex.HasCoordinates(N - 1, 0))
-                return new List<Vertex> { Vertices[N - 2, 0], Vertices[N - 1, 1], Vertices[N - 2, 1] };
+            if (IsTopRightVertex(vertex))
+                return new List<Vertex>
+                {
+                    GetLeftVertex(vertex),
+                    GetBottomLeftVertex(vertex),
+                    GetBottomVertex(vertex)
+                };
 
-            if (vertex.HasCoordinates(0, M - 1))
-                return new List<Vertex> { Vertices[0, M - 2], Vertices[1, M - 1], Vertices[1, M - 2] };
+            if (IsBottomRightVertex(vertex))
+                return new List<Vertex>
+                {
+                    GetTopVertex(vertex),
+                    GetTopLeftVertex(vertex),
+                    GetLeftVertex(vertex)
+                };
 
-            if (vertex.HasCoordinates(N - 1, M - 1))
-                return new List<Vertex> { Vertices[N - 2, M - 1], Vertices[N - 1, M - 2], Vertices[N - 2, M - 2] };
+            if (IsBottomLeftVertex(vertex))
+                return new List<Vertex>
+                {
+                    GetTopVertex(vertex),
+                    GetTopRightVertex(vertex),
+                    GetRightVertex(vertex)
+                };
 
-            // Рассматриваем боковые вершины
+            if (IsTopLeftVertex(vertex))
+                return new List<Vertex>
+                {
+                    GetBottomVertex(vertex),
+                    GetBottomRightVertex(vertex),
+                    GetRightVertex(vertex)
+                };
 
+            #endregion
 
+            #region Рассматриваем боковые вершины
 
-            return adjacentVertices;
+            if (IsVertexOnTheTopSide(vertex))
+                return new List<Vertex>
+                {
+                    GetLeftVertex(vertex),
+                    GetBottomLeftVertex(vertex),
+                    GetBottomVertex(vertex),
+                    GetBottomRightVertex(vertex),
+                    GetRightVertex(vertex)
+                };
+
+            if (IsVertexOnTheRightSide(vertex))
+                return new List<Vertex>
+                {
+                    GetTopVertex(vertex),
+                    GetTopLeftVertex(vertex),
+                    GetLeftVertex(vertex),
+                    GetBottomLeftVertex(vertex),
+                    GetBottomVertex(vertex)
+                };
+
+            if (IsVertexOnTheBottomSide(vertex))
+                return new List<Vertex>
+                {
+                    GetLeftVertex(vertex),
+                    GetTopLeftVertex(vertex),
+                    GetTopVertex(vertex),
+                    GetTopRightVertex(vertex),
+                    GetRightVertex(vertex)
+                };
+
+            if (IsVertexOnTheLeftSide(vertex))
+                return new List<Vertex>
+                {
+                    GetTopVertex(vertex),
+                    GetTopRightVertex(vertex),
+                    GetRightVertex(vertex),
+                    GetBottomRightVertex(vertex),
+                    GetBottomVertex(vertex)
+                };
+
+            #endregion
+
+            // Иначе вершина лежит "в середине карты" и нужно вернуть все 8 смежных вершин
+            return new List<Vertex>
+                {
+                    GetTopVertex(vertex),
+                    GetRightVertex(vertex),
+                    GetBottomVertex(vertex),
+                    GetLeftVertex(vertex),
+
+                    GetTopRightVertex(vertex),
+                    GetBottomRightVertex(vertex),
+                    GetBottomLeftVertex(vertex),
+                    GetTopLeftVertex(vertex)
+                };
         }
 
         /// <summary>
