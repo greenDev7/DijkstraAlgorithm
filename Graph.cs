@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DijkstraAlgorithm
 {
@@ -91,24 +92,38 @@ namespace DijkstraAlgorithm
         /// <param name="v1">Вершина из которой необходимо найти наикратчайший путь</param>
         /// <param name="v2">Вершина до которой необходимо найти наикратчайший путь</param>
         /// <returns></returns>
-        public List<Label> FindShortestPath(Vertex v1, Vertex v2)
+        public void FindShortestPath(Vertex start, Vertex goal)
         {
             // Вершине из которой будем искать путь присваиваем нулевую метку
-            Label zeroLabel = new Label(v1.Coordinate, 0.0);
-            v1.Labels.Clear();
-            v1.Labels.Add(zeroLabel);
-
-            List<Label> labels = new List<Label>();
-
-            Vertex currentVertex = v1;
+            start.Label = 0.0;
+            Vertex current = start;
 
             while (!AllVerticesAreVisited())
             {
-                // Находим смежные вершины к текущей (рассматриваемой) вершине
-                List<Vertex> vertices = GetAllAdjacentVertices(currentVertex);
-            }
+                // Находим соседние (ближайшие и при этом не посещенные) вершины к текущей (рассматриваемой) вершине
+                List<Vertex> neighbors = GetNeighbors(current);
 
-            return labels;
+                foreach (Vertex neighbor in neighbors)
+                {
+                    double currentWeight = current.Label + Weight(current, neighbor);
+                    if (currentWeight < neighbor.Label)
+                    {
+                        neighbor.Label = currentWeight;
+                        neighbor.Path.Add(current.Coordinate);
+                    }                    
+                }
+
+                // После того как все соседи рассмотрены, помечаем текущую вершину как посещенную
+                current.IsVisited = true;
+
+                // А в качестве текущей берем первую из соседней (вот тут нужно подумать, возможно стоит каким-то образом отбирать)
+                current = neighbors.First();
+            }
+        }
+
+        private List<Vertex> GetNeighbors(Vertex current)
+        {
+            throw new NotImplementedException();
         }
 
         #region Методы для поиска соседней вершины в зависимости от направления
@@ -267,10 +282,8 @@ namespace DijkstraAlgorithm
             for (int j = 0; j < M; j++)
                 for (int i = 0; i < N; i++)
                 {
-                    double height = SurfaceFunc(i * dx, j * dy);
-                    Label label = new Label(new Point2D(i, j));
-                    List<Label> labels = new List<Label>() { label };
-                    Vertices[i, j] = new Vertex(i, j, height, labels);
+                    double height = SurfaceFunc(i * dx, j * dy);                   
+                    Vertices[i, j] = new Vertex(i, j, new List<Point2D>(), height);
                 }
         }
     }
