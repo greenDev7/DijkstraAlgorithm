@@ -46,33 +46,32 @@ namespace DijkstraAlgorithm
         /// <returns></returns>
         double Weight(Vertex v1, Vertex v2)
         {
-            #region Блок для тестирования
+            #region Блок для тестирования            
 
-            int x1 = v1.Coordinate.i;
-            int y1 = v1.Coordinate.j;
-
-            int x2 = v2.Coordinate.i;
-            int y2 = v2.Coordinate.j;
-
-
-            if (x1 == 0 && y1 == 0 &&
-                x2 == 0 && y2 == 1)
-                return 2.0;
-            else if (x1 == 0 && y1 == 0 &&
-                     x2 == 1 && y2 == 0)
+            if (IsWeightFromTo(v1, 0, 0, v2, 0, 1))
                 return 1.0;
-            else if (x1 == 1 && y1 == 0 &&
-                     x2 == 1 && y2 == 1)
-                return 100.0;
-            else if (x1 == 0 && y1 == 1 &&
-                    x2 == 1 && y2 == 1)
+            if (IsWeightFromTo(v1, 0, 1, v2, 0, 2))
                 return 3.0;
-            else if (x1 == 0 && y1 == 0 &&
-                    x2 == 1 && y2 == 1)
+            if (IsWeightFromTo(v1, 0, 0, v2, 1, 0))
+                return 1.0;
+            if (IsWeightFromTo(v1, 1, 0, v2, 1, 1))
+                return 100.0;
+            if (IsWeightFromTo(v1, 1, 1, v2, 1, 2))
+                return 10.0;
+            if (IsWeightFromTo(v1, 0, 2, v2, 1, 2))
+                return 2.0;
+            if (IsWeightFromTo(v1, 0, 0, v2, 1, 1))
+                return 40.0;
+            if (IsWeightFromTo(v1, 1, 0, v2, 0, 1))
                 return 50.0;
-            else return 80.0;
+            if (IsWeightFromTo(v1, 0, 1, v2, 1, 2))
+                return 70.0;
+            if (IsWeightFromTo(v1, 1, 1, v2, 0, 2))
+                return 30.0;
+            if (IsWeightFromTo(v1, 0, 1, v2, 1, 1))
+                return 50.0;
 
-                #endregion
+            #endregion
 
             (double, double) x1y1 = GetRealXY(v1);
             (double, double) x2y2 = GetRealXY(v2);
@@ -84,6 +83,17 @@ namespace DijkstraAlgorithm
             double sumOfSquares = Math.Pow(xDiff, 2.0) + Math.Pow(yDiff, 2.0) + Math.Pow(zDiff, 2.0);
 
             return Math.Sqrt(sumOfSquares);
+        }
+
+        private bool IsWeightFromTo(Vertex v1, int x1, int y1, Vertex v2, int x2, int y2)
+        {
+            bool case1 = x1 == v1.Coordinate.i && y1 == v1.Coordinate.j &&
+                         x2 == v2.Coordinate.i && y2 == v2.Coordinate.j;
+
+            bool case2 = x1 == v2.Coordinate.i && y1 == v2.Coordinate.j &&
+                         x2 == v1.Coordinate.i && y2 == v1.Coordinate.j;
+
+            return case1 || case2;
         }
 
         /// <summary>
@@ -124,11 +134,13 @@ namespace DijkstraAlgorithm
 
         private Vertex GetCurrent(List<Vertex> neighbors)
         {
-            if (!neighbors.Any())
+            IEnumerable<Vertex> candidates = neighbors.Where(v => !v.IsGoal);
+
+            if (!candidates.Any())
                 return null;
 
-            double minLabel = neighbors.Min(v => v.Label);
-            Vertex newCurrent = neighbors.First(v => v.Label == minLabel);
+            double minLabel = candidates.Min(v => v.Label);
+            Vertex newCurrent = candidates.First(v => v.Label == minLabel);
 
             return newCurrent;
         }
@@ -137,7 +149,7 @@ namespace DijkstraAlgorithm
         {
             List<Vertex> allAdjacentVertices = GetAllAdjacentVertices(current);
 
-            List<Vertex> neighbors = allAdjacentVertices.Where(v => !v.IsVisited && !v.IsGoal).ToList();
+            List<Vertex> neighbors = allAdjacentVertices.Where(v => !v.IsVisited).ToList();
 
             return neighbors;
         }

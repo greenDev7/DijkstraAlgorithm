@@ -10,9 +10,9 @@ namespace DijkstraAlgorithm
     {
         static void Main(string[] args)
         {
-            Graph graph = new Graph(1, 1, 2, 2, Surface.Plane);
+            Graph graph = new Graph(1, 1, 2, 3, Surface.Plane);
 
-            
+            graph.FindShortestPath(graph.Vertices[0, 0], graph.Vertices[1, 1]);            
 
             Console.ReadLine();            
         }
