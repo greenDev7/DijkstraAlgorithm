@@ -95,10 +95,12 @@ namespace DijkstraAlgorithm
         public void FindShortestPath(Vertex start, Vertex goal)
         {
             // Вершине из которой будем искать путь присваиваем нулевую метку
-            start.Label = 0.0;
+            start.Label = 0.0;            
+            goal.IsGoal = true;
+
             Vertex current = start;
 
-            while (!AllVerticesAreVisited())
+            while (current != null)
             {
                 // Находим соседние (ближайшие и при этом не посещенные) вершины к текущей (рассматриваемой) вершине
                 List<Vertex> neighbors = GetNeighbors(current);
@@ -109,21 +111,35 @@ namespace DijkstraAlgorithm
                     if (currentWeight < neighbor.Label)
                     {
                         neighbor.Label = currentWeight;
-                        neighbor.Path.Add(current.Coordinate);
+                        neighbor.CameFrom = current.Coordinate;
                     }                    
                 }
 
                 // После того как все соседи рассмотрены, помечаем текущую вершину как посещенную
                 current.IsVisited = true;
-
-                // А в качестве текущей берем первую из соседней (вот тут нужно подумать, возможно стоит каким-то образом отбирать)
-                current = neighbors.First();
+                // И ищем среди "соседей" новую текущую метку
+                current = GetCurrent(neighbors);
             }
+        }
+
+        private Vertex GetCurrent(List<Vertex> neighbors)
+        {
+            if (!neighbors.Any())
+                return null;
+
+            double minLabel = neighbors.Min(v => v.Label);
+            Vertex newCurrent = neighbors.First(v => v.Label == minLabel);
+
+            return newCurrent;
         }
 
         private List<Vertex> GetNeighbors(Vertex current)
         {
-            throw new NotImplementedException();
+            List<Vertex> allAdjacentVertices = GetAllAdjacentVertices(current);
+
+            List<Vertex> neighbors = allAdjacentVertices.Where(v => !v.IsVisited && !v.IsGoal).ToList();
+
+            return neighbors;
         }
 
         #region Методы для поиска соседней вершины в зависимости от направления
@@ -156,7 +172,6 @@ namespace DijkstraAlgorithm
         /// <returns></returns>
         private List<Vertex> GetAllAdjacentVertices(Vertex vertex)
         {
-
             #region Рассматриваем угловые вершины
 
             if (IsTopRightVertex(vertex))
@@ -251,24 +266,6 @@ namespace DijkstraAlgorithm
                     GetTopLeftVertex(vertex)
                 };
         }
-
-        /// <summary>
-        /// Возвращает true, если все вершины графа посещены, иначе false
-        /// </summary>
-        /// <returns></returns>
-        private bool AllVerticesAreVisited()
-        {
-            if (this.Vertices == null)
-                return true;
-
-            for (int j = 0; j < M; j++)
-                for (int i = 0; i < N; i++)
-                    if (!Vertices[i, j].IsVisited)
-                        return false;
-
-            return true;
-        }
-
         public Graph(double dx, double dy, int N, int M, Func<double, double, double> SurfaceFunc)
         {
             this.N = N;
@@ -283,7 +280,7 @@ namespace DijkstraAlgorithm
                 for (int i = 0; i < N; i++)
                 {
                     double height = SurfaceFunc(i * dx, j * dy);                   
-                    Vertices[i, j] = new Vertex(i, j, new List<Point2D>(), height);
+                    Vertices[i, j] = new Vertex(i, j, Height: height);
                 }
         }
     }
