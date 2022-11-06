@@ -110,10 +110,12 @@ namespace DijkstraAlgorithm
 
             Vertex current = start;
 
+            List<Vertex> visitedVertices = new List<Vertex>();
+
             while (current != null)
             {
-                // Находим соседние (ближайшие и при этом не посещенные) вершины к текущей (рассматриваемой) вершине
-                List<Vertex> neighbors = GetNeighbors(current);
+                // Находим смежные и не посещенные вершины к текущей вершине
+                List<Vertex> neighbors = GetUnvisitedNeighbors(current);
 
                 foreach (Vertex neighbor in neighbors)
                 {
@@ -125,34 +127,40 @@ namespace DijkstraAlgorithm
                     }                    
                 }
 
-                // После того как все соседи рассмотрены, помечаем текущую вершину как посещенную
+                // После того как все соседи рассмотрены (всем соседям расставлены метки), помечаем текущую вершину как посещенную
                 current.IsVisited = true;
-                // И ищем среди "соседей" новую текущую метку
-                current = GetCurrent(neighbors);
+                // и добавляем ее в список посещенных вершин
+                visitedVertices.Add(current);
+                // Используем этот список посещенных вершин для поиска новой текущей вершины
+                current = GetCurrent(visitedVertices);
             }
         }
 
-        private Vertex GetCurrent(List<Vertex> neighbors)
+        private Vertex GetCurrent(List<Vertex> visitedVertices)
         {
-            IEnumerable<Vertex> candidates = neighbors.Where(v => !v.IsGoal);
+            List<Vertex> unvisitedAndNotGoalNeighbors = new List<Vertex>();
 
-            if (!candidates.Any())
+            foreach (Vertex v in visitedVertices)
+                if (HasUnvisitedAndNotGoalNeighbors(v, out unvisitedAndNotGoalNeighbors))
+                    break;
+
+            if (!unvisitedAndNotGoalNeighbors.Any())
                 return null;
 
-            double minLabel = candidates.Min(v => v.Label);
-            Vertex newCurrent = candidates.First(v => v.Label == minLabel);
+            double minLabel = unvisitedAndNotGoalNeighbors.Min(v => v.Label);
+            Vertex newCurrent = unvisitedAndNotGoalNeighbors.First(v => v.Label == minLabel);
 
             return newCurrent;
         }
 
-        private List<Vertex> GetNeighbors(Vertex current)
+        private bool HasUnvisitedAndNotGoalNeighbors(Vertex vertex, out List<Vertex> unvisitedAndNotGoalNeighbors)
         {
-            List<Vertex> allAdjacentVertices = GetAllAdjacentVertices(current);
+            unvisitedAndNotGoalNeighbors = GetUnvisitedNeighbors(vertex).Where(v => !v.IsGoal).ToList();
 
-            List<Vertex> neighbors = allAdjacentVertices.Where(v => !v.IsVisited).ToList();
-
-            return neighbors;
+            return unvisitedAndNotGoalNeighbors.Any();
         }
+
+        private List<Vertex> GetUnvisitedNeighbors(Vertex current) => GetAllAdjacentVertices(current).Where(v => !v.IsVisited).ToList();
 
         #region Методы для поиска соседней вершины в зависимости от направления
         private Vertex GetTopVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j + 1];
