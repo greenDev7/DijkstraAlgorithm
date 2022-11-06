@@ -97,13 +97,14 @@ namespace DijkstraAlgorithm
         }
 
         /// <summary>
-        /// Возвращает наикратчайший путь между двумя заданными вершинами графа
+        /// Возвращает кратчайший путь между двумя заданными вершинами графа
         /// </summary>
         /// <param name="v1">Вершина из которой необходимо найти наикратчайший путь</param>
         /// <param name="v2">Вершина до которой необходимо найти наикратчайший путь</param>
         /// <returns></returns>
-        public void FindShortestPath(Vertex start, Vertex goal)
+        public List<Point2D> FindShortestPathAndLength(Vertex start, Vertex goal, out double shortestPathLength)
         {
+            shortestPathLength = 0.0;
             // Вершине из которой будем искать путь присваиваем нулевую метку
             start.Label = 0.0;            
             goal.IsGoal = true;
@@ -134,8 +135,37 @@ namespace DijkstraAlgorithm
                 // Используем этот список посещенных вершин для поиска новой текущей вершины
                 current = GetCurrent(visitedVertices);
             }
+
+            shortestPathLength = goal.Label;
+            return GetShortestPath(goal);
         }
 
+        /// <summary>
+        /// Возвращает кратчайший путь
+        /// </summary>
+        /// <param name="goal">целевая вершина</param>
+        /// <returns></returns>
+        private List<Point2D> GetShortestPath(Vertex goal)
+        {
+            List<Point2D> path = new List<Point2D>();
+            
+            path.Add(goal.Coordinate);
+            Point2D cameFrom = goal.CameFrom;
+
+            while (cameFrom != null)
+            {
+                Vertex vertex = Vertices[cameFrom.i, cameFrom.j];
+                path.Add(vertex.Coordinate);
+                cameFrom = vertex.CameFrom;
+            }
+
+            return path;
+        }
+        /// <summary>
+        /// Возвращает текущую вершину используя список посещенных вершин
+        /// </summary>
+        /// <param name="visitedVertices">список посещенных вершин</param>
+        /// <returns></returns>
         private Vertex GetCurrent(List<Vertex> visitedVertices)
         {
             List<Vertex> unvisitedAndNotGoalNeighbors = new List<Vertex>();
@@ -144,22 +174,34 @@ namespace DijkstraAlgorithm
                 if (HasUnvisitedAndNotGoalNeighbors(v, out unvisitedAndNotGoalNeighbors))
                     break;
 
+            // Если не нашлось ни одного подходящего соседа, значит мы дошли до финальной вершины
             if (!unvisitedAndNotGoalNeighbors.Any())
                 return null;
 
+            // Находим и возвращаем соседа с минимальной меткой
             double minLabel = unvisitedAndNotGoalNeighbors.Min(v => v.Label);
             Vertex newCurrent = unvisitedAndNotGoalNeighbors.First(v => v.Label == minLabel);
 
             return newCurrent;
         }
 
+        /// <summary>
+        /// Возвращает true, если у текущей вершины имеются непосещенные соседи (среди которых нет целевой вершины), иначе false,
+        /// а также сам список непосещенных соседей
+        /// </summary>
+        /// <param name="vertex">текущая вершина</param>
+        /// <param name="unvisitedAndNotGoalNeighbors">список непосещенных соседей</param>
+        /// <returns></returns>
         private bool HasUnvisitedAndNotGoalNeighbors(Vertex vertex, out List<Vertex> unvisitedAndNotGoalNeighbors)
         {
             unvisitedAndNotGoalNeighbors = GetUnvisitedNeighbors(vertex).Where(v => !v.IsGoal).ToList();
-
             return unvisitedAndNotGoalNeighbors.Any();
         }
-
+        /// <summary>
+        /// Возвращает все смежные вершины для текущей, которые не посещены
+        /// </summary>
+        /// <param name="current">текущая вершина</param>
+        /// <returns></returns>
         private List<Vertex> GetUnvisitedNeighbors(Vertex current) => GetAllAdjacentVertices(current).Where(v => !v.IsVisited).ToList();
 
         #region Методы для поиска соседней вершины в зависимости от направления
