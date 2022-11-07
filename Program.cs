@@ -14,7 +14,7 @@ namespace DijkstraAlgorithm
 
             double shortestPathLength;
 
-            Vertex start = graph.Vertices[0, 0];
+            Vertex start = graph.Vertices[1, 2];
             Vertex goal = graph.Vertices[1, 1];
 
             List<Point2D> path = graph.FindShortestPathAndLength(start, goal, out shortestPathLength);            
