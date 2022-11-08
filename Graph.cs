@@ -24,6 +24,7 @@ namespace DijkstraAlgorithm
         public int M { get; set; }
         public Vertex[,] Vertices { get; }
         public Func<double, double, double> SurfaceFunc { get; set; }
+        public double gamma { get; set; }
 
         /// <summary>
         /// Возвращает (физические) координаты вершины с учетом координаты узла и шага регулярной сетки
@@ -53,7 +54,7 @@ namespace DijkstraAlgorithm
             double yDiff = x1y1.Item2 - x2y2.Item2;
             double zDiff = v1.Height - v2.Height;
 
-            double sumOfSquares = Math.Pow(xDiff, 2.0) + Math.Pow(yDiff, 2.0) + Math.Pow(zDiff, 2.0);
+            double sumOfSquares = Math.Pow(xDiff, 2.0) + Math.Pow(yDiff, 2.0) + gamma * Math.Pow(zDiff, 2.0);
 
             return Math.Sqrt(sumOfSquares);
         }       
@@ -290,13 +291,14 @@ namespace DijkstraAlgorithm
                     GetTopLeftVertex(vertex)
                 };
         }
-        public Graph(double dx, double dy, int N, int M, Func<double, double, double> SurfaceFunc)
+        public Graph(double dx, double dy, int N, int M, Func<double, double, double> SurfaceFunc, double gamma = 1.0)
         {
             this.N = N;
             this.M = M;
             this.dx = dx;
             this.dy = dy;
             this.SurfaceFunc = SurfaceFunc;
+            this.gamma = gamma;
 
             Vertices = new Vertex[N, M];
 
