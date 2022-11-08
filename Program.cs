@@ -12,10 +12,13 @@ namespace DijkstraAlgorithm
         {
             Graph graph = new Graph(1, 1, 2, 3, Surface.Plane);
 
+            graph.Vertices[0, 1].IsObstacle = true;
+            graph.Vertices[1, 2].IsObstacle = true;
+
             double shortestPathLength;
 
-            Vertex start = graph.Vertices[1, 2];
-            Vertex goal = graph.Vertices[1, 1];
+            Vertex start = graph.Vertices[0, 0];
+            Vertex goal = graph.Vertices[0, 2];
 
             List<Point2D> path = graph.FindShortestPathAndLength(start, goal, out shortestPathLength);            
 

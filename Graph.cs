@@ -39,8 +39,8 @@ namespace DijkstraAlgorithm
             return (x, y);
 
             // Merge test
-        }
-        
+        }        
+
         /// <summary>
         /// Возвращает вес ребра, соединяющего две соседние (смежные) вершины графа
         /// </summary>
@@ -49,6 +49,33 @@ namespace DijkstraAlgorithm
         /// <returns></returns>
         double Weight(Vertex v1, Vertex v2)
         {
+            #region Блок для тестирования            
+
+            if (IsWeightFromTo(v1, 0, 0, v2, 0, 1))
+                return 1.0;
+            if (IsWeightFromTo(v1, 0, 1, v2, 0, 2))
+                return 3.0;
+            if (IsWeightFromTo(v1, 0, 0, v2, 1, 0))
+                return 1.0;
+            if (IsWeightFromTo(v1, 1, 0, v2, 1, 1))
+                return 100.0;
+            if (IsWeightFromTo(v1, 1, 1, v2, 1, 2))
+                return 10.0;
+            if (IsWeightFromTo(v1, 0, 2, v2, 1, 2))
+                return 2.0;
+            if (IsWeightFromTo(v1, 0, 0, v2, 1, 1))
+                return 40.0;
+            if (IsWeightFromTo(v1, 1, 0, v2, 0, 1))
+                return 50.0;
+            if (IsWeightFromTo(v1, 0, 1, v2, 1, 2))
+                return 70.0;
+            if (IsWeightFromTo(v1, 1, 1, v2, 0, 2))
+                return 30.0;
+            if (IsWeightFromTo(v1, 0, 1, v2, 1, 1))
+                return 50.0;
+
+            #endregion
+
             (double, double) x1y1 = GetRealXY(v1);
             (double, double) x2y2 = GetRealXY(v2);
 
@@ -59,7 +86,18 @@ namespace DijkstraAlgorithm
             double sumOfSquares = Math.Pow(xDiff, 2.0) + Math.Pow(yDiff, 2.0) + gamma * Math.Pow(zDiff, 2.0);
 
             return Math.Sqrt(sumOfSquares);
-        }       
+        }
+
+        private bool IsWeightFromTo(Vertex v1, int x1, int y1, Vertex v2, int x2, int y2)
+        {
+            bool case1 = x1 == v1.Coordinate.i && y1 == v1.Coordinate.j &&
+                         x2 == v2.Coordinate.i && y2 == v2.Coordinate.j;
+
+            bool case2 = x1 == v2.Coordinate.i && y1 == v2.Coordinate.j &&
+                         x2 == v1.Coordinate.i && y2 == v1.Coordinate.j;
+
+            return case1 || case2;
+        }
 
         /// <summary>
         /// Возвращает кратчайший путь между двумя заданными вершинами графа
@@ -126,6 +164,7 @@ namespace DijkstraAlgorithm
 
             return path;
         }
+
         /// <summary>
         /// Возвращает текущую вершину используя список посещенных вершин
         /// </summary>
@@ -162,12 +201,13 @@ namespace DijkstraAlgorithm
             unvisitedAndNotGoalNeighbors = GetUnvisitedNeighbors(vertex).Where(v => !v.IsGoal).ToList();
             return unvisitedAndNotGoalNeighbors.Any();
         }
+
         /// <summary>
         /// Возвращает все смежные вершины для текущей, которые не посещены
         /// </summary>
         /// <param name="current">текущая вершина</param>
         /// <returns></returns>
-        private List<Vertex> GetUnvisitedNeighbors(Vertex current) => GetAllAdjacentVertices(current).Where(v => !v.IsVisited).ToList();
+        private List<Vertex> GetUnvisitedNeighbors(Vertex current) => GetAllAdjacentVertices(current).Where(v => !v.IsVisited && !v.IsObstacle).ToList();
 
         #region Методы для поиска соседней вершины в зависимости от направления
         private Vertex GetTopVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j + 1];
@@ -293,6 +333,7 @@ namespace DijkstraAlgorithm
                     GetTopLeftVertex(vertex)
                 };
         }
+
         public Graph(double dx, double dy, int N, int M, Func<double, double, double> SurfaceFunc, double gamma = 1.0)
         {
             this.N = N;
