@@ -37,6 +37,7 @@ namespace DijkstraAlgorithm
             double y = vertex.Coordinate.j * dy;
 
             return (x, y);
+
         }
         
         /// <summary>
