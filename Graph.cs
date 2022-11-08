@@ -24,6 +24,7 @@ namespace DijkstraAlgorithm
         public int M { get; set; }
         public Vertex[,] Vertices { get; }
         public Func<double, double, double> SurfaceFunc { get; set; }
+        public double gamma { get; set; }
 
         /// <summary>
         /// Возвращает (физические) координаты вершины с учетом координаты узла и шага регулярной сетки
@@ -46,33 +47,6 @@ namespace DijkstraAlgorithm
         /// <returns></returns>
         double Weight(Vertex v1, Vertex v2)
         {
-            #region Блок для тестирования            
-
-            if (IsWeightFromTo(v1, 0, 0, v2, 0, 1))
-                return 1.0;
-            if (IsWeightFromTo(v1, 0, 1, v2, 0, 2))
-                return 3.0;
-            if (IsWeightFromTo(v1, 0, 0, v2, 1, 0))
-                return 1.0;
-            if (IsWeightFromTo(v1, 1, 0, v2, 1, 1))
-                return 100.0;
-            if (IsWeightFromTo(v1, 1, 1, v2, 1, 2))
-                return 10.0;
-            if (IsWeightFromTo(v1, 0, 2, v2, 1, 2))
-                return 2.0;
-            if (IsWeightFromTo(v1, 0, 0, v2, 1, 1))
-                return 40.0;
-            if (IsWeightFromTo(v1, 1, 0, v2, 0, 1))
-                return 50.0;
-            if (IsWeightFromTo(v1, 0, 1, v2, 1, 2))
-                return 70.0;
-            if (IsWeightFromTo(v1, 1, 1, v2, 0, 2))
-                return 30.0;
-            if (IsWeightFromTo(v1, 0, 1, v2, 1, 1))
-                return 50.0;
-
-            #endregion
-
             (double, double) x1y1 = GetRealXY(v1);
             (double, double) x2y2 = GetRealXY(v2);
 
@@ -80,21 +54,10 @@ namespace DijkstraAlgorithm
             double yDiff = x1y1.Item2 - x2y2.Item2;
             double zDiff = v1.Height - v2.Height;
 
-            double sumOfSquares = Math.Pow(xDiff, 2.0) + Math.Pow(yDiff, 2.0) + Math.Pow(zDiff, 2.0);
+            double sumOfSquares = Math.Pow(xDiff, 2.0) + Math.Pow(yDiff, 2.0) + gamma * Math.Pow(zDiff, 2.0);
 
             return Math.Sqrt(sumOfSquares);
-        }
-
-        private bool IsWeightFromTo(Vertex v1, int x1, int y1, Vertex v2, int x2, int y2)
-        {
-            bool case1 = x1 == v1.Coordinate.i && y1 == v1.Coordinate.j &&
-                         x2 == v2.Coordinate.i && y2 == v2.Coordinate.j;
-
-            bool case2 = x1 == v2.Coordinate.i && y1 == v2.Coordinate.j &&
-                         x2 == v1.Coordinate.i && y2 == v1.Coordinate.j;
-
-            return case1 || case2;
-        }
+        }       
 
         /// <summary>
         /// Возвращает кратчайший путь между двумя заданными вершинами графа
@@ -328,13 +291,14 @@ namespace DijkstraAlgorithm
                     GetTopLeftVertex(vertex)
                 };
         }
-        public Graph(double dx, double dy, int N, int M, Func<double, double, double> SurfaceFunc)
+        public Graph(double dx, double dy, int N, int M, Func<double, double, double> SurfaceFunc, double gamma = 1.0)
         {
             this.N = N;
             this.M = M;
             this.dx = dx;
             this.dy = dy;
             this.SurfaceFunc = SurfaceFunc;
+            this.gamma = gamma;
 
             Vertices = new Vertex[N, M];
 
