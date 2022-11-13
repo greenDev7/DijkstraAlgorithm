@@ -64,8 +64,8 @@ namespace DijkstraAlgorithm
         /// <summary>
         /// Возвращает кратчайший путь между двумя заданными вершинами графа
         /// </summary>
-        /// <param name="v1">Вершина из которой необходимо найти наикратчайший путь</param>
-        /// <param name="v2">Вершина до которой необходимо найти наикратчайший путь</param>
+        /// <param name="startPoint">координаты стартовой вершины</param>
+        /// <param name="goalPoint">координаты целевой вершины</param>
         /// <returns></returns>
         public List<Point2D> FindShortestPathAndLength(Point2D startPoint, Point2D goalPoint, out double shortestPathLength)
         {
@@ -112,7 +112,7 @@ namespace DijkstraAlgorithm
         }
 
         /// <summary>
-        /// Возвращает кратчайший путь
+        /// Формирует и возвращает кратчайший путь
         /// </summary>
         /// <param name="goal">целевая вершина</param>
         /// <returns></returns>
