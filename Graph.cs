@@ -9,22 +9,22 @@ namespace DijkstraAlgorithm
         /// <summary>
         /// Шаг сетки по оси Ox
         /// </summary>
-        public double dx { get; set; }
+        public double dx { get; }
         /// <summary>
         /// Шаг сетки по оси Oy
         /// </summary>
-        public double dy { get; set; }
+        public double dy { get; }
         /// <summary>
         /// Количество вершин по оси Ox
         /// </summary>
-        public int N { get; set; }
+        public int N { get; }
         /// <summary>
         /// Количество вершин по оси Oy
         /// </summary>
-        public int M { get; set; }
+        public int M { get; }
         public Vertex[,] Vertices { get; }
-        public Func<double, double, double> SurfaceFunc { get; set; }
-        public double gamma { get; set; }
+        public Func<double, double, double> SurfaceFunc { get; }
+        public double gamma { get; }
 
         /// <summary>
         /// Возвращает (физические) координаты вершины с учетом координаты узла и шага регулярной сетки
@@ -105,13 +105,19 @@ namespace DijkstraAlgorithm
         /// <param name="v1">Вершина из которой необходимо найти наикратчайший путь</param>
         /// <param name="v2">Вершина до которой необходимо найти наикратчайший путь</param>
         /// <returns></returns>
-        public List<Point2D> FindShortestPathAndLength(Vertex start, Vertex goal, out double shortestPathLength)
+        public List<Point2D> FindShortestPathAndLength(Point2D startPoint, Point2D goalPoint, out double shortestPathLength)
         {
             shortestPathLength = 0.0;
+
             // Вершине из которой будем искать путь присваиваем нулевую метку
-            start.Label = 0.0;            
+            Vertex start = Vertices[startPoint.i, startPoint.j];
+            start.Label = 0.0;
+
+            // Целевой вершине тоже присваиваем соответствующую метку
+            Vertex goal = Vertices[goalPoint.i, goalPoint.j];
             goal.IsGoal = true;
 
+            // Помечаем стартовую вершину как текущую
             Vertex current = start;
 
             List<Vertex> visitedVertices = new List<Vertex>();
@@ -352,5 +358,23 @@ namespace DijkstraAlgorithm
                     Vertices[i, j] = new Vertex(i, j, Height: height);
                 }
         }
+
+        public Graph(int[,] obstacleMatrix)
+        {
+            this.N = Convert.ToInt32(obstacleMatrix.GetLongLength(1));
+            this.M = Convert.ToInt32(obstacleMatrix.GetLongLength(0));
+            this.dx = 1.0;
+            this.dy = 1.0;
+            this.gamma = 1.0;
+
+            Vertices = new Vertex[N, M];
+
+            for (int j = 0; j < M; j++)
+                for (int i = 0; i < N; i++)
+                {
+                    bool isObstacle = Convert.ToBoolean(obstacleMatrix[j, i]);
+                    Vertices[i, j] = new Vertex(i, j, IsObstacle: isObstacle);
+                }
+        }        
     }
 }
