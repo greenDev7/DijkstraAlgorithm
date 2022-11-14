@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace DijkstraAlgorithm
@@ -22,9 +23,14 @@ namespace DijkstraAlgorithm
         /// Количество вершин по оси Oy
         /// </summary>
         public int M { get; }
+        /// <summary>
+        /// Матрица вершин графа
+        /// </summary>
         public Vertex[,] Vertices { get; }
-        public Func<double, double, double> SurfaceFunc { get; }
-        public double gamma { get; }
+        /// <summary>
+        /// Предельная величина уклона, необходимая для обхода препятствий, в градусах
+        /// </summary>
+        public double MaxSlope { get; }
 
         /// <summary>
         /// Возвращает (физические) координаты вершины с учетом координаты узла и шага регулярной сетки
@@ -42,7 +48,7 @@ namespace DijkstraAlgorithm
         }        
 
         /// <summary>
-        /// Возвращает вес ребра, соединяющего две соседние (смежные) вершины графа
+        /// Возвращает вес ребра, соединяющего две соседние (смежные) вершины графа (по факту это расстояние между точками поверхности)
         /// </summary>
         /// <param name="v1">Первая вершина</param>
         /// <param name="v2">Вторая вершина</param>
@@ -56,16 +62,17 @@ namespace DijkstraAlgorithm
             double yDiff = x1y1.Item2 - x2y2.Item2;
             double zDiff = v1.Height - v2.Height;
 
-            double sumOfSquares = Math.Pow(xDiff, 2.0) + Math.Pow(yDiff, 2.0) + gamma * Math.Pow(zDiff, 2.0);
+            double sumOfSquares = Math.Pow(xDiff, 2.0) + Math.Pow(yDiff, 2.0) + Math.Pow(zDiff, 2.0);
 
             return Math.Sqrt(sumOfSquares);
         }
 
         /// <summary>
-        /// Возвращает кратчайший путь между двумя заданными вершинами графа
+        /// Возвращает кратчайший путь между двумя заданными вершинами графа и его длину
         /// </summary>
         /// <param name="startPoint">координаты стартовой вершины</param>
         /// <param name="goalPoint">координаты целевой вершины</param>
+        /// <param name="shortestPathLength">длина пути</param>
         /// <returns></returns>
         public List<Point2D> FindShortestPathAndLength(Point2D startPoint, Point2D goalPoint, out double shortestPathLength)
         {
@@ -86,8 +93,8 @@ namespace DijkstraAlgorithm
 
             while (current != null)
             {
-                // Находим смежные и не посещенные вершины к текущей вершине
-                List<Vertex> neighbors = GetUnvisitedNeighbors(current);
+                // Находим подходящих (годных) соседей: которые еще не посещены, не являются препятствиями и т.п.
+                List<Vertex> neighbors = GetValidNeighbors(current);
 
                 foreach (Vertex neighbor in neighbors)
                 {
@@ -99,7 +106,7 @@ namespace DijkstraAlgorithm
                     }                    
                 }
 
-                // После того как все соседи рассмотрены (всем соседям расставлены метки), помечаем текущую вершину как посещенную
+                // После того как все подходящие соседи рассмотрены (им расставлены метки), помечаем текущую вершину как посещенную
                 current.IsVisited = true;
                 // и добавляем ее в список посещенных вершин
                 visitedVertices.Add(current);
@@ -112,7 +119,7 @@ namespace DijkstraAlgorithm
         }
 
         /// <summary>
-        /// Формирует и возвращает кратчайший путь
+        /// Формирует кратчайший путь, начиная с целевой вершины и заканчивая стартовой
         /// </summary>
         /// <param name="goal">целевая вершина</param>
         /// <returns></returns>
@@ -134,48 +141,55 @@ namespace DijkstraAlgorithm
         }
 
         /// <summary>
-        /// Возвращает текущую вершину используя список посещенных вершин
+        /// Возвращает текущую вершину, используя список посещенных вершин и подходящих соседей (которые валидны и не являются целевой вершиной)
         /// </summary>
         /// <param name="visitedVertices">список посещенных вершин</param>
         /// <returns></returns>
         private Vertex GetCurrent(List<Vertex> visitedVertices)
         {
-            List<Vertex> unvisitedAndNotGoalNeighbors = new List<Vertex>();
+            List<Vertex> validAndNotGoalNeighbors = new List<Vertex>();
 
             foreach (Vertex v in visitedVertices)
-                if (HasUnvisitedAndNotGoalNeighbors(v, out unvisitedAndNotGoalNeighbors))
+                if (HasValidAndNotGoalNeighbors(v, out validAndNotGoalNeighbors))
                     break;
 
             // Если не нашлось ни одного подходящего соседа, значит мы дошли до финальной вершины
-            if (!unvisitedAndNotGoalNeighbors.Any())
+            if (!validAndNotGoalNeighbors.Any())
                 return null;
 
             // Находим и возвращаем соседа с минимальной меткой
-            double minLabel = unvisitedAndNotGoalNeighbors.Min(v => v.Label);
-            Vertex newCurrent = unvisitedAndNotGoalNeighbors.First(v => v.Label == minLabel);
+            double minLabel = validAndNotGoalNeighbors.Min(v => v.Label);
+            Vertex newCurrent = validAndNotGoalNeighbors.First(v => v.Label == minLabel);
 
             return newCurrent;
         }
 
         /// <summary>
-        /// Возвращает true, если у текущей вершины имеются непосещенные соседи (среди которых нет целевой вершины), иначе false,
-        /// а также сам список непосещенных соседей
+        /// Возвращает true, если у текущей вершины имеются валидные соседи, за исключением целевой вершины, иначе false,
+        /// а также сам список этих соседей
         /// </summary>
         /// <param name="vertex">текущая вершина</param>
-        /// <param name="unvisitedAndNotGoalNeighbors">список непосещенных соседей</param>
+        /// <param name="validAndNotGoalNeighbors">список подходящих соседей</param>
         /// <returns></returns>
-        private bool HasUnvisitedAndNotGoalNeighbors(Vertex vertex, out List<Vertex> unvisitedAndNotGoalNeighbors)
+        private bool HasValidAndNotGoalNeighbors(Vertex vertex, out List<Vertex> validAndNotGoalNeighbors)
         {
-            unvisitedAndNotGoalNeighbors = GetUnvisitedNeighbors(vertex).Where(v => !v.IsGoal).ToList();
-            return unvisitedAndNotGoalNeighbors.Any();
+            validAndNotGoalNeighbors = GetValidNeighbors(vertex).Where(v => !v.IsGoal).ToList();
+            return validAndNotGoalNeighbors.Any();
         }
 
         /// <summary>
-        /// Возвращает все смежные вершины для текущей, которые не посещены
+        /// Возвращает величину уклона между двумя вершинами в градусах
         /// </summary>
-        /// <param name="current">текущая вершина</param>
+        /// <param name="v1">первая вершина</param>
+        /// <param name="v2">вторая вершина</param>
         /// <returns></returns>
-        private List<Vertex> GetUnvisitedNeighbors(Vertex current) => GetAllAdjacentVertices(current).Where(v => !v.IsVisited && !v.IsObstacle).ToList();
+        private double Slope(Vertex v1, Vertex v2)
+        {
+            double hypotenuse = Weight(v1, v2); // Вес ребра - это и есть по факту расстояние между точками
+            double zDiffAbs = Math.Abs(v1.Height - v2.Height); // Модуль разности по высоте
+
+            return Math.Asin(zDiffAbs / hypotenuse) * 180.0 / Math.PI; // Переводим радианы в градусы
+        }        
 
         #region Методы для поиска соседней вершины в зависимости от направления
         private Vertex GetTopVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j + 1];
@@ -199,6 +213,20 @@ namespace DijkstraAlgorithm
         private bool IsVertexOnTheBottomSide(Vertex v1) => v1.Coordinate.j == 0;
         private bool IsVertexOnTheLeftSide(Vertex v1) => v1.Coordinate.i == 0;
         #endregion
+
+        /// <summary>
+        /// Возвращает для текущей вершины подходящих (валидных) соседей
+        /// </summary>
+        /// <param name="current">текущая вершина</param>
+        /// <returns></returns>
+        private List<Vertex> GetValidNeighbors(Vertex current)
+        {
+            // Из всех смежных вершин отбираем те, которые 
+            // 1. Еще не посещены
+            // 2. Не являются вершинами-препятствиями
+            // 3. Наклон к которым меньше заданной величины (например, 30 градусов)
+            return GetAllAdjacentVertices(current).Where(v => !v.IsVisited && !v.IsObstacle && Slope(v, current) < MaxSlope).ToList();
+        }
 
         /// <summary>
         /// Возвращает все смежные вершины к рассматриваемой вершине
@@ -302,32 +330,82 @@ namespace DijkstraAlgorithm
                 };
         }
 
-        public Graph(double dx, double dy, int N, int M, Func<double, double, double> SurfaceFunc, double gamma = 1.0)
+        /// <summary>
+        /// Задает высоты определенных вершин графа. Необходим для создания (имитации) на карте местности сооружений/зданий
+        /// </summary>
+        /// <param name="bottomLeftCoordinate">левая нижняя координата сооружения. От нее будет начинаться отсчет</param>
+        /// <param name="width">ширина сооружения (количество вершин, которое будет занимать сооружение по оси Ox)</param>
+        /// <param name="length">длина сооружения (количество вершин, которое будет занимать сооружение по оси Oy)</param>
+        /// <param name="height">высота сооружения</param>
+        public void CreateBuilding(Point2D bottomLeftCoordinate, int width, int length, double height)
         {
-            this.N = N;
-            this.M = M;
+            for (int i = bottomLeftCoordinate.i; i < bottomLeftCoordinate.i + width; i++)
+            {
+                for (int j = bottomLeftCoordinate.j; j < bottomLeftCoordinate.j + length; j++)
+                    Vertices[i, j].Height = height;
+            }
+        }
+
+        /// <summary>
+        /// Записывает поверхность в файл
+        /// </summary>
+        /// <param name="fileName">имя файла</param>
+        public void WriteSurfaceToFile(string fileName)
+        {
+            using (StreamWriter outputFile = new StreamWriter(fileName))
+            {
+                for (int j = 0; j < M; j++)
+                {
+                    for (int i = 0; i < N; i++)
+                        outputFile.Write(Vertices[i, j].Height.ToString() + ";");
+
+                    outputFile.WriteLine();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Инициализирует граф с помощью композиций функций Гаусса
+        /// </summary>
+        /// <param name="dx">величина шага по оси Ox</param>
+        /// <param name="dy">величина шага по оси Oy</param>
+        /// <param name="N">количество вершин по оси Ox</param>
+        /// <param name="M">количество вершин по оси Oy</param>
+        /// <param name="MaxSlope">предельная величина уклона</param>
+        /// <param name="gaussianParameters">список параметров для вычисления Гауссианов</param>
+        public Graph(double dx, double dy, int N, int M, double MaxSlope, params GaussianParameter[] gaussianParameters)
+        {
             this.dx = dx;
             this.dy = dy;
-            this.SurfaceFunc = SurfaceFunc;
-            this.gamma = gamma;
+            this.N = N;
+            this.M = M;
+            this.MaxSlope = MaxSlope;
 
             Vertices = new Vertex[N, M];
 
             for (int j = 0; j < M; j++)
                 for (int i = 0; i < N; i++)
                 {
-                    double height = SurfaceFunc(i * dx, j * dy);                   
+                    double height = 0.0;
+                    foreach (GaussianParameter gp in gaussianParameters)
+                        height += Surface.Gaussian(i * dx, j * dy, gp);
+
                     Vertices[i, j] = new Vertex(i, j, Height: height);
                 }
         }
 
-        public Graph(int[,] obstacleMatrix)
+        /// <summary>
+        /// Инициализирует граф с помощью матрицы препятствий
+        /// </summary>
+        /// <param name="obstacleMatrix">матрица с препятствиями</param>
+        /// <param name="MaxSlope">предельная величина уклона</param>
+        public Graph(int[,] obstacleMatrix, double MaxSlope = 20.0)
         {
             this.N = Convert.ToInt32(obstacleMatrix.GetLongLength(1));
             this.M = Convert.ToInt32(obstacleMatrix.GetLongLength(0));
             this.dx = 1.0;
             this.dy = 1.0;
-            this.gamma = 1.0;
+            this.MaxSlope = MaxSlope;
 
             Vertices = new Vertex[N, M];
 
