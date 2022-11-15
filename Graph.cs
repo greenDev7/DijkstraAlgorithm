@@ -82,13 +82,14 @@ namespace DijkstraAlgorithm
             Vertex start = Vertices[startPoint.i, startPoint.j];
             start.Label = 0.0;
 
-            // Целевой вершине тоже присваиваем соответствующую метку
+            // Целевую вершину пометим, что она целевая
             Vertex goal = Vertices[goalPoint.i, goalPoint.j];
             goal.IsGoal = true;
 
             // Помечаем стартовую вершину как текущую
             Vertex current = start;
 
+            // В этом списке будем копить посещенные вершины
             List<Vertex> visitedVertices = new List<Vertex>();
 
             while (current != null)
@@ -114,7 +115,9 @@ namespace DijkstraAlgorithm
                 current = GetCurrent(visitedVertices);
             }
 
+            // В конце работы алгоритма в целевой вершине в свойстве Label будет находиться длина искомого пути
             shortestPathLength = goal.Label;
+            // А с помощью свойства CameFrom сформируем и вернем сам искомый путь
             return GetShortestPath(goal);
         }
 
@@ -153,11 +156,11 @@ namespace DijkstraAlgorithm
                 if (HasValidAndNotGoalNeighbors(v, out validAndNotGoalNeighbors))
                     break;
 
-            // Если не нашлось ни одного подходящего соседа, значит мы дошли до финальной вершины
+            // Если не нашлось ни одного подходящего соседа, значит мы дошли до целевой вершины. Алгоритм завершен
             if (!validAndNotGoalNeighbors.Any())
                 return null;
 
-            // Находим и возвращаем соседа с минимальной меткой
+            // Иначе находим и возвращаем соседа с минимальной меткой
             double minLabel = validAndNotGoalNeighbors.Min(v => v.Label);
             Vertex newCurrent = validAndNotGoalNeighbors.First(v => v.Label == minLabel);
 
@@ -191,7 +194,7 @@ namespace DijkstraAlgorithm
             return Math.Asin(zDiffAbs / hypotenuse) * 180.0 / Math.PI; // Переводим радианы в градусы
         }        
 
-        #region Методы для поиска соседней вершины в зависимости от направления
+        #region Методы для получения соседней вершины в зависимости от направления
         private Vertex GetTopVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j + 1];
         private Vertex GetRightVertex(Vertex v) => Vertices[v.Coordinate.i + 1, v.Coordinate.j];
         private Vertex GetBottomVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j - 1];
@@ -221,7 +224,7 @@ namespace DijkstraAlgorithm
         /// <returns></returns>
         private List<Vertex> GetValidNeighbors(Vertex current)
         {
-            // Из всех смежных вершин отбираем те, которые 
+            // Из всех смежных вершин оставляем только те, которые 
             // 1. Еще не посещены
             // 2. Не являются вершинами-препятствиями
             // 3. Наклон к которым меньше заданной величины (например, 30 градусов)
