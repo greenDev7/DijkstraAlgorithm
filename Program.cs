@@ -8,15 +8,23 @@ namespace DijkstraAlgorithm
     {
         static void Main(string[] args)
         {
-            Graph graph = new Graph(1, 1, 2, 3, 20.0);
+            // Создаем матрицу-препятствий из csv-файла
+            string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            int[,] obstacleMatrix = Obstacle.CreateObstacleMatrixFromCSVFile(Path.Combine(docPath, "MazeMini.csv"));
+
+            // Инициализируем граф с помощью этой матрицы
+            Graph graph = new Graph(obstacleMatrix);
 
             // Вычисляем кратчайший путь
             double shortestPathLength = 0.0;
 
-            Point2D startPoint = new Point2D(0, 0);
-            Point2D goalPoint = new Point2D(1, 1);
+            Point2D startPoint = new Point2D(2, 12);
+            Point2D goalPoint = new Point2D(6, 7);
 
             List<Point2D> shortestPath = graph.FindShortestPathAndLength(startPoint, goalPoint, out shortestPathLength);
+
+            // Записываем найденный путь в файл
+            WriteShortestPathToFile(shortestPath, Path.Combine(docPath, "shortestPath.txt"));
 
             Console.ReadLine();
         }
