@@ -55,6 +55,33 @@ namespace DijkstraAlgorithm
         /// <returns></returns>
         double Weight(Vertex v1, Vertex v2)
         {
+            #region Блок для тестирования            
+
+            if (IsWeightFromTo(v1, 0, 0, v2, 0, 1))
+                return 1.0;
+            if (IsWeightFromTo(v1, 0, 1, v2, 0, 2))
+                return 3.0;
+            if (IsWeightFromTo(v1, 0, 0, v2, 1, 0))
+                return 1.0;
+            if (IsWeightFromTo(v1, 1, 0, v2, 1, 1))
+                return 100.0;
+            if (IsWeightFromTo(v1, 1, 1, v2, 1, 2))
+                return 10.0;
+            if (IsWeightFromTo(v1, 0, 2, v2, 1, 2))
+                return 2.0;
+            if (IsWeightFromTo(v1, 0, 0, v2, 1, 1))
+                return 40.0;
+            if (IsWeightFromTo(v1, 1, 0, v2, 0, 1))
+                return 50.0;
+            if (IsWeightFromTo(v1, 0, 1, v2, 1, 2))
+                return 70.0;
+            if (IsWeightFromTo(v1, 1, 1, v2, 0, 2))
+                return 30.0;
+            if (IsWeightFromTo(v1, 0, 1, v2, 1, 1))
+                return 50.0;
+
+            #endregion
+
             (double, double) x1y1 = GetRealXY(v1);
             (double, double) x2y2 = GetRealXY(v2);
 
@@ -67,6 +94,17 @@ namespace DijkstraAlgorithm
             return Math.Sqrt(sumOfSquares);
         }
 
+        private bool IsWeightFromTo(Vertex v1, int x1, int y1, Vertex v2, int x2, int y2)
+        {
+            bool case1 = x1 == v1.Coordinate.i && y1 == v1.Coordinate.j &&
+                         x2 == v2.Coordinate.i && y2 == v2.Coordinate.j;
+
+            bool case2 = x1 == v2.Coordinate.i && y1 == v2.Coordinate.j &&
+                         x2 == v1.Coordinate.i && y2 == v1.Coordinate.j;
+
+            return case1 || case2;
+        }
+
         /// <summary>
         /// Возвращает кратчайший путь между двумя заданными вершинами графа и его длину
         /// </summary>
@@ -76,25 +114,31 @@ namespace DijkstraAlgorithm
         /// <returns></returns>
         public List<Point2D> FindShortestPathAndLength(Point2D startPoint, Point2D goalPoint, out double shortestPathLength)
         {
-            shortestPathLength = 0.0;
+            shortestPathLength = 0.0; // Здесь будет храниться длина искомого пути
 
-            // Вершине из которой будем искать путь присваиваем нулевую метку
+            // Стартовой вершине присваиваем нулевую метку
             Vertex start = Vertices[startPoint.i, startPoint.j];
             start.Label = 0.0;
 
-            // Целевую вершину пометим, что она целевая
+            // Сохраним отдельно целевую вершину
             Vertex goal = Vertices[goalPoint.i, goalPoint.j];
-            goal.IsGoal = true;
 
-            // Помечаем стартовую вершину как текущую
-            Vertex current = start;
+            // Очередь с приоритетами
+            List<Vertex> priorityQueue = new List<Vertex>();
+            priorityQueue.Add(start);
 
-            // В этом списке будем копить посещенные вершины
-            List<Vertex> visitedVertices = new List<Vertex>();
-
-            while (current != null)
+            // Цикл заканчивает свою работу, когда очередь с приоритетами пустая, либо когда целевая вершина оказалась посещена
+            while (priorityQueue.Any() && !goal.IsVisited)
             {
-                // Находим подходящих (годных) соседей: которые еще не посещены, не являются препятствиями и т.п.
+                // Получаем из очереди с приоритетами вершину с минимальной меткой и одновременно удаляем эту вершину из очереди
+                Vertex current = RemoveAndReturnVertexWithMinimalLabel(priorityQueue);
+
+                if (current.IsVisited)
+                    continue;
+
+                current.IsVisited = true;
+
+                // Находим подходящих соседей: которые еще не посещены, не являются препятствиями и т.п.
                 List<Vertex> neighbors = GetValidNeighbors(current);
 
                 foreach (Vertex neighbor in neighbors)
@@ -104,21 +148,30 @@ namespace DijkstraAlgorithm
                     {
                         neighbor.Label = currentWeight;
                         neighbor.CameFrom = current.Coordinate;
+                        priorityQueue.Add(neighbor);
                     }                    
-                }
-
-                // После того как все подходящие соседи рассмотрены (им расставлены метки), помечаем текущую вершину как посещенную
-                current.IsVisited = true;
-                // и добавляем ее в список посещенных вершин
-                visitedVertices.Add(current);
-                // Используем этот список посещенных вершин для поиска новой текущей вершины
-                current = GetCurrent(visitedVertices);
+                }          
             }
 
             // В конце работы алгоритма в целевой вершине в свойстве Label будет находиться длина искомого пути
             shortestPathLength = goal.Label;
             // А с помощью свойства CameFrom сформируем и вернем сам искомый путь
             return GetShortestPath(goal);
+        }
+
+        /// <summary>
+        /// Находит и возвращает вершину с минимальной меткой из очереди с приоритетами, после этого удаляет найденную вершину из очереди
+        /// </summary>
+        /// <param name="priorityQueue">очередь с приоритетом</param>
+        /// <returns></returns>
+        private Vertex RemoveAndReturnVertexWithMinimalLabel(List<Vertex> priorityQueue)
+        {
+            // Находим вершину с минимальной меткой
+            Vertex vertexWithMinimalLabel = priorityQueue.Aggregate((currentMin, v) => (v.Label < currentMin.Label ? v : currentMin));
+            // Удаляем эту вершину из очереди
+            priorityQueue.Remove(vertexWithMinimalLabel);
+            // и возвращаем эту вершину
+            return vertexWithMinimalLabel;
         }
 
         /// <summary>
@@ -141,44 +194,7 @@ namespace DijkstraAlgorithm
             }
 
             return path;
-        }
-
-        /// <summary>
-        /// Возвращает текущую вершину, используя список посещенных вершин и подходящих соседей (которые валидны и не являются целевой вершиной)
-        /// </summary>
-        /// <param name="visitedVertices">список посещенных вершин</param>
-        /// <returns></returns>
-        private Vertex GetCurrent(List<Vertex> visitedVertices)
-        {
-            List<Vertex> validAndNotGoalNeighbors = new List<Vertex>();
-
-            foreach (Vertex v in visitedVertices)
-                if (HasValidAndNotGoalNeighbors(v, out validAndNotGoalNeighbors))
-                    break;
-
-            // Если не нашлось ни одного подходящего соседа, значит мы дошли до целевой вершины. Алгоритм завершен
-            if (!validAndNotGoalNeighbors.Any())
-                return null;
-
-            // Иначе находим и возвращаем соседа с минимальной меткой
-            double minLabel = validAndNotGoalNeighbors.Min(v => v.Label);
-            Vertex newCurrent = validAndNotGoalNeighbors.First(v => v.Label == minLabel);
-
-            return newCurrent;
-        }
-
-        /// <summary>
-        /// Возвращает true, если у текущей вершины имеются валидные соседи, за исключением целевой вершины, иначе false,
-        /// а также сам список этих соседей
-        /// </summary>
-        /// <param name="vertex">текущая вершина</param>
-        /// <param name="validAndNotGoalNeighbors">список подходящих соседей</param>
-        /// <returns></returns>
-        private bool HasValidAndNotGoalNeighbors(Vertex vertex, out List<Vertex> validAndNotGoalNeighbors)
-        {
-            validAndNotGoalNeighbors = GetValidNeighbors(vertex).Where(v => !v.IsGoal).ToList();
-            return validAndNotGoalNeighbors.Any();
-        }
+        }          
 
         /// <summary>
         /// Возвращает величину уклона между двумя вершинами в градусах
