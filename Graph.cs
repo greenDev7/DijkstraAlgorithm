@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ConcurrentPriorityQueue;
+
 
 namespace DijkstraAlgorithm
 {
@@ -85,15 +87,15 @@ namespace DijkstraAlgorithm
             // Сохраним отдельно целевую вершину
             Vertex goal = Vertices[goalPoint.i, goalPoint.j];
 
-            // Очередь с приоритетами
-            List<Vertex> priorityQueue = new List<Vertex>();
-            priorityQueue.Add(start);
+            // Очередь с приоритетом
+            ConcurrentPriorityQueue<Vertex, double> priorityQueue = new ConcurrentPriorityQueue<Vertex, double>(new MyDoubleComparer());
+            priorityQueue.Enqueue(start, start.Label);
 
-            // Цикл заканчивает свою работу, когда очередь с приоритетами пустая, либо когда целевая вершина оказалась посещена
+            // Цикл заканчивает свою работу, когда очередь пустая, либо когда целевая вершина оказалась посещена
             while (priorityQueue.Any() && !goal.IsVisited)
             {
-                // Получаем из очереди с приоритетами вершину с минимальной меткой и одновременно удаляем эту вершину из очереди
-                Vertex current = RemoveAndReturnVertexWithMinimalLabel(priorityQueue);
+                // Получаем из очереди с приоритетом вершину с минимальной меткой (и одновременно удаляем эту вершину из очереди)
+                Vertex current = priorityQueue.Dequeue();
 
                 if (current.IsVisited)
                     continue;
@@ -110,7 +112,8 @@ namespace DijkstraAlgorithm
                     {
                         neighbor.Label = currentWeight;
                         neighbor.CameFrom = current.Coordinate;
-                        priorityQueue.Add(neighbor);
+                        // Добавляем соседа в очередь с приоритетом
+                        priorityQueue.Enqueue(neighbor, neighbor.Label);
                     }                    
                 }          
             }
@@ -119,22 +122,7 @@ namespace DijkstraAlgorithm
             shortestPathLength = goal.Label;
             // А с помощью свойства CameFrom сформируем и вернем сам искомый путь
             return GetShortestPath(goal);
-        }
-
-        /// <summary>
-        /// Находит и возвращает вершину с минимальной меткой из очереди с приоритетами, после этого удаляет найденную вершину из очереди
-        /// </summary>
-        /// <param name="priorityQueue">очередь с приоритетом</param>
-        /// <returns></returns>
-        private Vertex RemoveAndReturnVertexWithMinimalLabel(List<Vertex> priorityQueue)
-        {
-            // Находим вершину с минимальной меткой
-            Vertex vertexWithMinimalLabel = priorityQueue.Aggregate((currentMin, v) => (v.Label < currentMin.Label ? v : currentMin));
-            // Удаляем эту вершину из очереди
-            priorityQueue.Remove(vertexWithMinimalLabel);
-            // и возвращаем эту вершину
-            return vertexWithMinimalLabel;
-        }
+        }      
 
         /// <summary>
         /// Формирует кратчайший путь, начиная с целевой вершины и заканчивая стартовой
