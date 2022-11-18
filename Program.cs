@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace DijkstraAlgorithm
 {
@@ -10,16 +11,16 @@ namespace DijkstraAlgorithm
         {
             // Создаем матрицу-препятствий из csv-файла
             string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            int[,] obstacleMatrix = Obstacle.CreateObstacleMatrixFromCSVFile(Path.Combine(docPath, "MazeMini.csv"));
+            int[,] obstacleMatrix = Obstacle.CreateObstacleMatrixFromCSVFile(Path.Combine(docPath, "test2.csv"));
 
             // Инициализируем граф с помощью этой матрицы
             Graph graph = new Graph(obstacleMatrix);
 
             // Вычисляем кратчайший путь
-            double shortestPathLength = 0.0;
+            double shortestPathLength = 0.0;           
 
-            Point2D startPoint = new Point2D(2, 12);
-            Point2D goalPoint = new Point2D(6, 7);
+            Point2D startPoint = new Point2D(0, 4);
+            Point2D goalPoint = new Point2D(27, 5);
 
             List<Point2D> shortestPath = graph.FindShortestPathAndLength(startPoint, goalPoint, out shortestPathLength);
 
