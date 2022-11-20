@@ -112,7 +112,7 @@ namespace DijkstraAlgorithm
                     {
                         neighbor.Label = currentWeight;
                         neighbor.CameFrom = current.Coordinate;
-                        // Добавляем соседа в очередь с приоритетом
+                        // Добавляем соседа в очередь с приоритетом используя в качестве приоритета значение его метки
                         priorityQueue.Enqueue(neighbor, neighbor.Label);
                     }                    
                 }          
