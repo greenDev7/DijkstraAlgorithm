@@ -11,7 +11,7 @@ namespace DijkstraAlgorithm
         {
             // Создаем матрицу-препятствий из csv-файла
             string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            int[,] obstacleMatrix = Obstacle.CreateObstacleMatrixFromCSVFile(Path.Combine(docPath, "test2.csv"));
+            int[,] obstacleMatrix = Obstacle.CreateObstacleMatrixFromCSVFile(Path.Combine(docPath, "obstacle1.csv"));
 
             // Инициализируем граф с помощью этой матрицы
             Graph graph = new Graph(obstacleMatrix);
@@ -19,13 +19,19 @@ namespace DijkstraAlgorithm
             // Вычисляем кратчайший путь
             double shortestPathLength = 0.0;           
 
-            Point2D startPoint = new Point2D(0, 4);
-            Point2D goalPoint = new Point2D(27, 5);
+            Point2D startPoint = new Point2D(3, 4);
+            Point2D goalPoint = new Point2D(12, 4);
 
             List<Point2D> shortestPath = graph.FindShortestPathAndLength(startPoint, goalPoint, out shortestPathLength);
 
             // Записываем найденный путь в файл
-            WriteShortestPathToFile(shortestPath, Path.Combine(docPath, "shortestPath.txt"));
+            //WriteShortestPathToFile(shortestPath, Path.Combine(docPath, "shortestPath.txt"));
+
+            Console.WriteLine("Coordinates of shortest path: ");
+            foreach (Point2D p in shortestPath)
+                Console.WriteLine(string.Format("({0}, {1})", p.i, p.j));
+
+            Console.WriteLine(string.Format("Length of shortest path: {0}", shortestPathLength));
 
             Console.ReadLine();
         }
