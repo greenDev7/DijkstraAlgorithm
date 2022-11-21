@@ -158,30 +158,7 @@ namespace DijkstraAlgorithm
             double zDiffAbs = Math.Abs(v1.Height - v2.Height); // Модуль разности по высоте
 
             return Math.Asin(zDiffAbs / hypotenuse) * 180.0 / Math.PI; // Переводим радианы в градусы
-        }        
-
-        #region Методы для получения соседней вершины в зависимости от направления
-        private Vertex GetTopVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j + 1];
-        private Vertex GetRightVertex(Vertex v) => Vertices[v.Coordinate.i + 1, v.Coordinate.j];
-        private Vertex GetBottomVertex(Vertex v) => Vertices[v.Coordinate.i, v.Coordinate.j - 1];
-        private Vertex GetLeftVertex(Vertex v) => Vertices[v.Coordinate.i - 1, v.Coordinate.j];
-        private Vertex GetTopRightVertex(Vertex v) => Vertices[v.Coordinate.i + 1, v.Coordinate.j + 1];
-        private Vertex GetBottomRightVertex(Vertex v) => Vertices[v.Coordinate.i + 1, v.Coordinate.j - 1];
-        private Vertex GetBottomLeftVertex(Vertex v) => Vertices[v.Coordinate.i - 1, v.Coordinate.j - 1];
-        private Vertex GetTopLeftVertex(Vertex v) => Vertices[v.Coordinate.i - 1, v.Coordinate.j + 1];
-        #endregion
-
-        #region Методы для определения принадлежности вершины той или иной стороне/углу сетки
-        private bool IsTopRightVertex(Vertex v1) => v1.Coordinate.i == N - 1 && v1.Coordinate.j == M - 1;
-        private bool IsBottomRightVertex(Vertex v1) => v1.Coordinate.i == N - 1 && v1.Coordinate.j == 0;
-        private bool IsBottomLeftVertex(Vertex v1) => v1.Coordinate.i == 0 && v1.Coordinate.j == 0;
-        private bool IsTopLeftVertex(Vertex v1) => v1.Coordinate.i == 0 && v1.Coordinate.j == M - 1;
-
-        private bool IsVertexOnTheTopSide(Vertex v1) => v1.Coordinate.j == M - 1;
-        private bool IsVertexOnTheRightSide(Vertex v1) => v1.Coordinate.i == N - 1;
-        private bool IsVertexOnTheBottomSide(Vertex v1) => v1.Coordinate.j == 0;
-        private bool IsVertexOnTheLeftSide(Vertex v1) => v1.Coordinate.i == 0;
-        #endregion
+        }               
 
         /// <summary>
         /// Возвращает для текущей вершины подходящих (валидных) соседей
@@ -204,99 +181,22 @@ namespace DijkstraAlgorithm
         /// <returns></returns>
         private List<Vertex> GetAllAdjacentVertices(Vertex vertex)
         {
-            #region Рассматриваем угловые вершины
+            List<Vertex> adjacentVertices = new List<Vertex>();            
 
-            if (IsTopRightVertex(vertex))
-                return new List<Vertex>
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
                 {
-                    GetLeftVertex(vertex),
-                    GetBottomLeftVertex(vertex),
-                    GetBottomVertex(vertex)
-                };
+                    int neighborX = vertex.Coordinate.i + i;
+                    int neighborY = vertex.Coordinate.j + j;
 
-            if (IsBottomRightVertex(vertex))
-                return new List<Vertex>
-                {
-                    GetTopVertex(vertex),
-                    GetTopLeftVertex(vertex),
-                    GetLeftVertex(vertex)
-                };
+                    if ((i == 0 && j == 0) || neighborX < 0 || neighborY < 0 || neighborX == N || neighborY == M)
+                        continue;
+                    adjacentVertices.Add(Vertices[neighborX, neighborY]);
+                }
+            }
 
-            if (IsBottomLeftVertex(vertex))
-                return new List<Vertex>
-                {
-                    GetTopVertex(vertex),
-                    GetTopRightVertex(vertex),
-                    GetRightVertex(vertex)
-                };
-
-            if (IsTopLeftVertex(vertex))
-                return new List<Vertex>
-                {
-                    GetBottomVertex(vertex),
-                    GetBottomRightVertex(vertex),
-                    GetRightVertex(vertex)
-                };
-
-            #endregion
-
-            #region Рассматриваем боковые вершины
-
-            if (IsVertexOnTheTopSide(vertex))
-                return new List<Vertex>
-                {
-                    GetLeftVertex(vertex),
-                    GetBottomLeftVertex(vertex),
-                    GetBottomVertex(vertex),
-                    GetBottomRightVertex(vertex),
-                    GetRightVertex(vertex)
-                };
-
-            if (IsVertexOnTheRightSide(vertex))
-                return new List<Vertex>
-                {
-                    GetTopVertex(vertex),
-                    GetTopLeftVertex(vertex),
-                    GetLeftVertex(vertex),
-                    GetBottomLeftVertex(vertex),
-                    GetBottomVertex(vertex)
-                };
-
-            if (IsVertexOnTheBottomSide(vertex))
-                return new List<Vertex>
-                {
-                    GetLeftVertex(vertex),
-                    GetTopLeftVertex(vertex),
-                    GetTopVertex(vertex),
-                    GetTopRightVertex(vertex),
-                    GetRightVertex(vertex)
-                };
-
-            if (IsVertexOnTheLeftSide(vertex))
-                return new List<Vertex>
-                {
-                    GetTopVertex(vertex),
-                    GetTopRightVertex(vertex),
-                    GetRightVertex(vertex),
-                    GetBottomRightVertex(vertex),
-                    GetBottomVertex(vertex)
-                };
-
-            #endregion
-
-            // Иначе вершина лежит "в середине карты" и нужно вернуть все 8 смежных вершин
-            return new List<Vertex>
-                {
-                    GetTopVertex(vertex),
-                    GetRightVertex(vertex),
-                    GetBottomVertex(vertex),
-                    GetLeftVertex(vertex),
-
-                    GetTopRightVertex(vertex),
-                    GetBottomRightVertex(vertex),
-                    GetBottomLeftVertex(vertex),
-                    GetTopLeftVertex(vertex)
-                };
+            return adjacentVertices;
         }
 
         /// <summary>
