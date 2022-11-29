@@ -125,3 +125,7 @@ static void Main(string[] args)
 Визуализация:
 
 ![screenshot1](https://github.com/greenDev7/DijkstraAlgorithm/blob/master/Examples/3D/Surface/3dView1.png)
+
+## Ссылки
+
+[Хабр](https://habr.com/ru/post/700462/) 
