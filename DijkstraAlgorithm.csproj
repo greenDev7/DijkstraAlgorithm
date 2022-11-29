@@ -36,6 +36,9 @@
     <Reference Include="ConcurrentPriorityQueue, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\PriorityQueue.0.1.0\lib\net45\ConcurrentPriorityQueue.dll</HintPath>
     </Reference>
+    <Reference Include="PriorityQueue, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5e136dbf0437dacd, processorArchitecture=MSIL">
+      <HintPath>packages\OptimizedPriorityQueue.5.1.0\lib\net45\PriorityQueue.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

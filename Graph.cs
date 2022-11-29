@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ConcurrentPriorityQueue;
+using Priority_Queue;
 
 
 namespace DijkstraAlgorithm
@@ -88,7 +88,7 @@ namespace DijkstraAlgorithm
             Vertex goal = Vertices[goalPoint.i, goalPoint.j];
 
             // Очередь с приоритетом
-            ConcurrentPriorityQueue<Vertex, double> priorityQueue = new ConcurrentPriorityQueue<Vertex, double>(new MyDoubleComparer());
+            SimplePriorityQueue<Vertex, double> priorityQueue = new SimplePriorityQueue<Vertex, double>();
             priorityQueue.Enqueue(start, start.Label);
 
             // Цикл заканчивает свою работу, когда очередь пустая, либо когда целевая вершина оказалась посещена
