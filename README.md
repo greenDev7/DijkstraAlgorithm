@@ -119,8 +119,8 @@ static void Main(string[] args)
 ```
 
 Результат работы программы:
- - surface.txt --- Матрица со значениями 3D поверхности;
- - shortestPath.txt --- файл с трехмерными координатами оптимального пути
+ - [surface.txt](https://github.com/greenDev7/DijkstraAlgorithm/blob/master/Examples/3D/Surface/surfaceMatrix.txt) --- Матрица со значениями 3D поверхности;
+ - [shortestPath.txt](https://github.com/greenDev7/DijkstraAlgorithm/blob/master/Examples/3D/Surface/shortestPath.txt) --- файл с трехмерными координатами оптимального пути
 
 Визуализация:
 
