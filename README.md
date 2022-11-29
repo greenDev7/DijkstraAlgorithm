@@ -80,6 +80,8 @@ Length of shortest path: 11,4852813742386
 Program.cs:
 
 ``` csharp
+static void Main(string[] args)
+        {
             // Создаем несколько экземпляров параметров для Гауссиана для имитации гор (холмов) и одного оврага
             GaussianParameter gaussianParameter1 = new GaussianParameter(1.5, 0.5, 0.5, 2.0, 4.0);
             GaussianParameter gaussianParameter2 = new GaussianParameter(1.0, 0.5, 0.5, 7.5, 1.0);
@@ -113,4 +115,13 @@ Program.cs:
             WriteShortestPathToFile(shortestPath, graph, Path.Combine(docPath, "shortestPath.txt"));
 
             Console.ReadLine();
+        }
 ```
+
+Результат работы программы:
+ - surface.txt --- Матрица со значениями 3D поверхности;
+ - shortestPath.txt --- файл с трехмерными координатами оптимального пути
+
+Визуализация:
+
+![screenshot1](https://github.com/greenDev7/DijkstraAlgorithm/blob/master/Examples/3D/Surface/3dView1.png)
